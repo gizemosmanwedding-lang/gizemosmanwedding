@@ -103,7 +103,7 @@ const translations = {
     "score.ready": "Rekoru geçersen otomatik güncellenir.",
     "score.newRecord": "Yeni rekor: {score} puan!",
     "score.last": "Son skor: {score}. Rekor için biraz daha zıpla.",
-    "footer.text": "Gizem & Osman · 01 Ağustos 2026",
+    "footer.text": "Created By Gizem & Osman · 01 Ağustos 2026",
     "calendar.title": "Gizem & Osman Düğün Töreni",
     "calendar.details": "Gizem ve Osman'ın düğün töreni. Tarih: 01 Ağustos 2026 Cumartesi, Saat: 19:00.",
     "share.title": "Gizem & Osman Düğün Davetiyesi",
