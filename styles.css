@@ -1274,19 +1274,12 @@ svg {
 }
 
 .photo-upload-card iframe {
-  display: block;
   width: 100%;
-  height: var(--photo-frame-height, 1120px);
-  min-height: 720px;
+  height: min(760px, 78vh);
+  min-height: 560px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--paper-warm);
-  overflow: hidden;
-  scrollbar-width: none;
-}
-
-.photo-upload-card iframe::-webkit-scrollbar {
-  display: none;
 }
 
 .photo-upload-link {
@@ -1963,8 +1956,8 @@ svg {
   }
 
   .photo-upload-card iframe {
-    height: var(--photo-frame-height, 1180px);
-    min-height: 820px;
+    min-height: 620px;
+    height: 74vh;
     border-radius: 16px;
   }
 
