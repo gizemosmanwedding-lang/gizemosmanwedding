@@ -18,6 +18,7 @@ const gameStatus = document.querySelector("#gameStatus");
 const lastScoreValue = document.querySelector("#lastScore");
 const bestScoreValue = document.querySelector("#bestScore");
 const scoreNotice = document.querySelector("#scoreNotice");
+const photoUploadFrame = document.querySelector("#photoUploadFrame");
 const languageSwitch = document.querySelector(".language-switch");
 const languageButtons = document.querySelectorAll("[data-language]");
 const metaDescription = document.querySelector('meta[name="description"]');
@@ -644,6 +645,25 @@ function hideScrollCue() {
   scrollCue?.classList.add("is-hidden");
 }
 
+function updatePhotoFrameHeight(height) {
+  if (!photoUploadFrame) return;
+
+  const nextHeight = Math.min(2400, Math.max(720, Number.parseInt(height, 10) || 0));
+  if (!nextHeight) return;
+  photoUploadFrame.style.setProperty("--photo-frame-height", `${nextHeight}px`);
+}
+
+function handlePhotoFrameMessage(event) {
+  const allowedOrigins = ["https://script.google.com", "https://script.googleusercontent.com"];
+  if (!allowedOrigins.includes(event.origin)) return;
+
+  const message = event.data;
+  if (!message || typeof message !== "object") return;
+  if (message.type !== "photoFrameHeight") return;
+
+  updatePhotoFrameHeight(message.height);
+}
+
 async function shareInvitation() {
   if (!shareButton) return;
 
@@ -722,6 +742,7 @@ window.addEventListener("touchmove", hideScrollCue, { passive: true });
 window.addEventListener("resize", () => {
   if (!gameState.running) setupGamePreview();
 });
+window.addEventListener("message", handlePhotoFrameMessage);
 
 gameButton?.addEventListener("click", (event) => {
   event.stopPropagation();
