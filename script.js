@@ -15,12 +15,11 @@ const gameObstacleImage = document.querySelector("#gameObstacleImage");
 const gameButton = document.querySelector("#gameButton");
 const gameScore = document.querySelector("#gameScore");
 const gameStatus = document.querySelector("#gameStatus");
-const lastScoreValue = document.querySelector("#lastScore");
-const bestScoreValue = document.querySelector("#bestScore");
 const scoreNotice = document.querySelector("#scoreNotice");
 const leaderboardForm = document.querySelector("#leaderboardForm");
 const playerNameInput = document.querySelector("#playerName");
 const leaderboardSubmit = document.querySelector("#leaderboardSubmit");
+const submitScoreValue = document.querySelector("#submitScoreValue");
 const leaderboardList = document.querySelector("#leaderboardList");
 const leaderboardRefresh = document.querySelector("#leaderboardRefresh");
 const leaderboardStatus = document.querySelector("#leaderboardStatus");
@@ -281,6 +280,10 @@ Object.assign(translations.tr, {
   "score.kicker": "Oyuncular arasında",
   "score.title": "Skor Tablosu",
   "score.storage": "İlk 10",
+  "score.empty": "Henüz skor yok. İlk isim sizden gelsin.",
+  "score.ready": "Oyun bitince skorunu kaydedip tabloda görebilirsin.",
+  "score.newRecord": "Skor: {score}. Kaydettiğinde tabloda görünecek.",
+  "score.last": "Skor: {score}. Kaydettiğinde tabloda görünecek.",
   "score.saveTitle": "Skorunu kaydet",
   "score.namePlaceholder": "Adınız",
   "score.submit": "Skoru Kaydet",
@@ -303,6 +306,10 @@ Object.assign(translations.en, {
   "score.kicker": "Among players",
   "score.title": "Score Board",
   "score.storage": "Top 10",
+  "score.empty": "No scores yet. Your name can be first.",
+  "score.ready": "Save your score after the game to see it on the board.",
+  "score.newRecord": "Score: {score}. Save it to show it on the board.",
+  "score.last": "Score: {score}. Save it to show it on the board.",
   "score.saveTitle": "Save your score",
   "score.namePlaceholder": "Your name",
   "score.submit": "Save Score",
@@ -325,6 +332,10 @@ Object.assign(translations.it, {
   "score.kicker": "Tra i giocatori",
   "score.title": "Classifica",
   "score.storage": "Top 10",
+  "score.empty": "Ancora nessun punteggio. Il primo nome può essere il tuo.",
+  "score.ready": "Salva il tuo punteggio dopo il gioco per vederlo in classifica.",
+  "score.newRecord": "Punteggio: {score}. Salvalo per mostrarlo in classifica.",
+  "score.last": "Punteggio: {score}. Salvalo per mostrarlo in classifica.",
   "score.saveTitle": "Salva il tuo punteggio",
   "score.namePlaceholder": "Il tuo nome",
   "score.submit": "Salva punteggio",
@@ -593,8 +604,6 @@ function saveScoreRecord(record) {
 
 function renderScoreRecord({ preserveNotice = false } = {}) {
   const record = loadScoreRecord();
-  if (lastScoreValue) lastScoreValue.textContent = String(record.last);
-  if (bestScoreValue) bestScoreValue.textContent = String(record.best);
 
   if (!preserveNotice) {
     setScoreNotice(record.best ? "score.ready" : "score.empty");
@@ -605,13 +614,10 @@ function recordGameScore(score) {
   const current = loadScoreRecord();
   const numericScore = Math.max(0, Number.parseInt(score, 10) || 0);
   const isNewRecord = numericScore > current.best;
-  const nextRecord = saveScoreRecord({
+  saveScoreRecord({
     last: numericScore,
     best: isNewRecord ? numericScore : current.best,
   });
-
-  if (lastScoreValue) lastScoreValue.textContent = String(nextRecord.last);
-  if (bestScoreValue) bestScoreValue.textContent = String(nextRecord.best);
 
   if (isNewRecord) {
     setScoreNotice("score.newRecord", { score: numericScore });
@@ -789,13 +795,16 @@ function showLeaderboardForm(score) {
   if (!leaderboardForm) return;
 
   leaderboardForm.hidden = pendingLeaderboardScore <= 0;
+  if (submitScoreValue) submitScoreValue.textContent = String(pendingLeaderboardScore);
   if (pendingLeaderboardScore > 0) {
+    weddingGame?.classList.add("has-score-submit");
     setLeaderboardStatus("score.savePrompt", { score: pendingLeaderboardScore });
   }
 }
 
 function hideLeaderboardForm() {
   pendingLeaderboardScore = 0;
+  weddingGame?.classList.remove("has-score-submit");
   if (leaderboardForm) leaderboardForm.hidden = true;
 }
 
@@ -1047,6 +1056,7 @@ leaderboardRefresh?.addEventListener("click", () => {
 });
 
 weddingGame?.addEventListener("keydown", (event) => {
+  if (event.target.closest("input, button")) return;
   if (event.key !== "Enter" && event.key !== " ") return;
   event.preventDefault();
   jumpGame();
