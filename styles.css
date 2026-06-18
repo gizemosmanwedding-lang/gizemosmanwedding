@@ -1634,6 +1634,204 @@ svg {
   line-height: 1.55;
 }
 
+.score-submit {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(185, 149, 85, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.76);
+}
+
+.score-submit[hidden] {
+  display: none;
+}
+
+.score-submit label,
+.leaderboard-panel-head span {
+  color: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.score-submit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.score-submit input {
+  min-width: 0;
+  flex: 1;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font: 700 0.9rem/1 Manrope, "Segoe UI", Arial, sans-serif;
+  outline: 0;
+}
+
+.score-submit input:focus {
+  border-color: rgba(185, 149, 85, 0.48);
+  box-shadow: 0 0 0 4px rgba(185, 149, 85, 0.12);
+}
+
+.score-submit button,
+.leaderboard-refresh {
+  border: 1px solid rgba(185, 149, 85, 0.28);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font: 900 0.75rem/1 Manrope, "Segoe UI", Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.score-submit button {
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.leaderboard-refresh {
+  min-height: 34px;
+  padding: 0 13px;
+  background: rgba(37, 33, 28, 0.92);
+}
+
+.score-submit button:hover,
+.leaderboard-refresh:hover {
+  transform: translateY(-1px);
+  background: var(--seal-red-dark);
+}
+
+.score-submit button:disabled,
+.leaderboard-refresh:disabled {
+  cursor: wait;
+  opacity: 0.58;
+  transform: none;
+}
+
+.leaderboard-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.leaderboard-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leaderboard-entry,
+.leaderboard-empty {
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(255, 253, 249, 0.72);
+}
+
+.leaderboard-entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 11px;
+}
+
+.leaderboard-entry.is-top-three {
+  border-color: rgba(185, 149, 85, 0.28);
+  background:
+    radial-gradient(circle at 12% 50%, rgba(185, 149, 85, 0.16), transparent 34%),
+    rgba(255, 253, 249, 0.84);
+}
+
+.leaderboard-rank,
+.leaderboard-medal {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.leaderboard-rank {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.leaderboard-medal {
+  color: #fffdf8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 10px 18px rgba(37, 33, 28, 0.12);
+}
+
+.leaderboard-medal.is-gold {
+  background: linear-gradient(135deg, #f8d775, #b98518);
+}
+
+.leaderboard-medal.is-silver {
+  background: linear-gradient(135deg, #eef1f4, #929aa4);
+}
+
+.leaderboard-medal.is-bronze {
+  background: linear-gradient(135deg, #e0a36e, #985a32);
+}
+
+.leaderboard-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 900;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-score {
+  color: var(--seal-red);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.leaderboard-empty,
+.leaderboard-status {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.leaderboard-empty {
+  padding: 14px;
+  text-align: left;
+}
+
+.leaderboard-status {
+  margin: 0;
+}
+
 .detail-item span,
 .countdown-grid span {
   color: var(--gold);
@@ -1977,6 +2175,24 @@ svg {
 
   .score-board-head > span {
     text-align: left;
+  }
+
+  .score-submit-row {
+    flex-direction: column;
+  }
+
+  .score-submit button {
+    width: 100%;
+  }
+
+  .leaderboard-entry {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .leaderboard-score {
+    font-size: 1.28rem;
   }
 
   .game-topline {

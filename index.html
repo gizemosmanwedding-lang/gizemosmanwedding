@@ -164,7 +164,7 @@
         line-height: 1.6;
       }
     </style>
-    <link rel="stylesheet" href="styles.css?v=i18n-1" />
+    <link rel="stylesheet" href="styles.css?v=scoreboard-2" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -179,7 +179,7 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@300;400;500;600;700&display=swap"
       />
     </noscript>
-    <script src="script.js?v=i18n-1" defer></script>
+    <script src="script.js?v=scoreboard-1" defer></script>
   </head>
   <body class="is-locked">
     <section id="cover" class="cover" role="button" tabindex="0" aria-label="Davetiyeyi aç" data-i18n-aria="cover.aria">
@@ -496,10 +496,10 @@
           <div class="score-board reveal" aria-labelledby="scoreboard-title">
             <div class="score-board-head">
               <div>
-                <p data-i18n="score.kicker">Bu cihazdaki</p>
-                <h3 id="scoreboard-title" data-i18n="score.title">Skor Kaydı</h3>
+                <p data-i18n="score.kicker">Oyuncular arasında</p>
+                <h3 id="scoreboard-title" data-i18n="score.title">Skor Tablosu</h3>
               </div>
-              <span data-i18n="score.storage">Tarayıcıda saklanır</span>
+              <span data-i18n="score.storage">İlk 10</span>
             </div>
 
             <div class="score-stats" aria-live="polite">
@@ -514,6 +514,41 @@
             </div>
 
             <p class="score-notice" id="scoreNotice">Rekoru geçersen otomatik güncellenir.</p>
+
+            <form class="score-submit" id="leaderboardForm" autocomplete="off" hidden>
+              <label for="playerName" data-i18n="score.saveTitle">Skorunu kaydet</label>
+              <div class="score-submit-row">
+                <input
+                  id="playerName"
+                  name="playerName"
+                  type="text"
+                  maxlength="24"
+                  placeholder="Adınız"
+                  data-i18n-placeholder="score.namePlaceholder"
+                />
+                <button id="leaderboardSubmit" type="submit" data-i18n="score.submit">Skoru Kaydet</button>
+              </div>
+            </form>
+
+            <div class="leaderboard-panel" aria-live="polite">
+              <div class="leaderboard-panel-head">
+                <span data-i18n="score.rankTitle">İlk 10</span>
+                <button
+                  class="leaderboard-refresh"
+                  id="leaderboardRefresh"
+                  type="button"
+                  title="Skor tablosunu yenile"
+                  data-i18n="score.refresh"
+                  data-i18n-title="score.refreshTitle"
+                >
+                  Yenile
+                </button>
+              </div>
+              <ol class="leaderboard-list" id="leaderboardList"></ol>
+              <p class="leaderboard-status" id="leaderboardStatus">
+                Apps Script URL eklendiğinde global ilk 10 burada görünecek.
+              </p>
+            </div>
           </div>
         </div>
       </section>

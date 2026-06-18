@@ -18,6 +18,12 @@ const gameStatus = document.querySelector("#gameStatus");
 const lastScoreValue = document.querySelector("#lastScore");
 const bestScoreValue = document.querySelector("#bestScore");
 const scoreNotice = document.querySelector("#scoreNotice");
+const leaderboardForm = document.querySelector("#leaderboardForm");
+const playerNameInput = document.querySelector("#playerName");
+const leaderboardSubmit = document.querySelector("#leaderboardSubmit");
+const leaderboardList = document.querySelector("#leaderboardList");
+const leaderboardRefresh = document.querySelector("#leaderboardRefresh");
+const leaderboardStatus = document.querySelector("#leaderboardStatus");
 const languageSwitch = document.querySelector(".language-switch");
 const languageButtons = document.querySelectorAll("[data-language]");
 const metaDescription = document.querySelector('meta[name="description"]');
@@ -271,6 +277,72 @@ const translations = {
   },
 };
 
+Object.assign(translations.tr, {
+  "score.kicker": "Oyuncular arasında",
+  "score.title": "Skor Tablosu",
+  "score.storage": "İlk 10",
+  "score.saveTitle": "Skorunu kaydet",
+  "score.namePlaceholder": "Adınız",
+  "score.submit": "Skoru Kaydet",
+  "score.saving": "Kaydediliyor...",
+  "score.saved": "Skor kaydedildi! İlk 10 güncellendi.",
+  "score.savePrompt": "{score} puanı tabloya yazdırmak için adını ekle.",
+  "score.nameRequired": "Skoru kaydetmek için adını yazmalısın.",
+  "score.setup": "Apps Script URL eklendiğinde global ilk 10 burada görünecek.",
+  "score.loading": "Skor tablosu yükleniyor...",
+  "score.loaded": "Global skor tablosu güncel.",
+  "score.loadError": "Skor tablosu şu an yüklenemedi.",
+  "score.submitError": "Skor kaydedilemedi. Birazdan tekrar deneyin.",
+  "score.globalEmpty": "Henüz global skor yok. İlk isim burada parlayacak.",
+  "score.rankTitle": "İlk 10",
+  "score.refreshTitle": "Skor tablosunu yenile",
+  "score.refresh": "Yenile",
+});
+
+Object.assign(translations.en, {
+  "score.kicker": "Among players",
+  "score.title": "Score Board",
+  "score.storage": "Top 10",
+  "score.saveTitle": "Save your score",
+  "score.namePlaceholder": "Your name",
+  "score.submit": "Save Score",
+  "score.saving": "Saving...",
+  "score.saved": "Score saved! Top 10 updated.",
+  "score.savePrompt": "Add your name to put {score} points on the board.",
+  "score.nameRequired": "Enter your name to save the score.",
+  "score.setup": "The global top 10 will appear here after the Apps Script URL is added.",
+  "score.loading": "Loading score board...",
+  "score.loaded": "Global score board is up to date.",
+  "score.loadError": "The score board could not be loaded right now.",
+  "score.submitError": "The score could not be saved. Please try again soon.",
+  "score.globalEmpty": "No global scores yet. The first name will shine here.",
+  "score.rankTitle": "Top 10",
+  "score.refreshTitle": "Refresh score board",
+  "score.refresh": "Refresh",
+});
+
+Object.assign(translations.it, {
+  "score.kicker": "Tra i giocatori",
+  "score.title": "Classifica",
+  "score.storage": "Top 10",
+  "score.saveTitle": "Salva il tuo punteggio",
+  "score.namePlaceholder": "Il tuo nome",
+  "score.submit": "Salva punteggio",
+  "score.saving": "Salvataggio...",
+  "score.saved": "Punteggio salvato! Top 10 aggiornata.",
+  "score.savePrompt": "Aggiungi il tuo nome per mettere {score} punti in classifica.",
+  "score.nameRequired": "Inserisci il nome per salvare il punteggio.",
+  "score.setup": "La top 10 globale apparirà qui dopo aver aggiunto l'URL Apps Script.",
+  "score.loading": "Caricamento classifica...",
+  "score.loaded": "La classifica globale è aggiornata.",
+  "score.loadError": "La classifica non può essere caricata ora.",
+  "score.submitError": "Il punteggio non può essere salvato. Riprova tra poco.",
+  "score.globalEmpty": "Ancora nessun punteggio globale. Il primo nome brillerà qui.",
+  "score.rankTitle": "Top 10",
+  "score.refreshTitle": "Aggiorna classifica",
+  "score.refresh": "Aggiorna",
+});
+
 const htmlLanguageCodes = {
   tr: "tr",
   en: "en",
@@ -284,6 +356,20 @@ let memoryScoreRecord = { last: 0, best: 0 };
 
 const scoreRecordKey = "gizem-osman-runner-score-v1";
 const legacyLeaderboardKey = "gizem-osman-runner-leaderboard-v1";
+const playerNameKey = "gizem-osman-runner-player-name-v1";
+const leaderboardWebAppUrl = "https://script.google.com/macros/s/AKfycbw04Ap3XuCC2BtIueeGaU-7Dv4ae2nbTBhCWFUb57URIqVGeEJkSllROBTn6u-cZUCN/exec";
+const leaderboardLimit = 10;
+const leaderboardTimeoutMs = 8500;
+const medalClasses = ["is-gold", "is-silver", "is-bronze"];
+const medalLabels = {
+  tr: ["Altın madalya", "Gümüş madalya", "Bronz madalya"],
+  en: ["Gold medal", "Silver medal", "Bronze medal"],
+  it: ["Medaglia d'oro", "Medaglia d'argento", "Medaglia di bronzo"],
+};
+let pendingLeaderboardScore = 0;
+let leaderboardEntries = [];
+let leaderboardBusy = false;
+let leaderboardStatusState = { key: "score.setup", replacements: {} };
 
 function t(key, replacements = {}) {
   const template = translations[currentLanguage]?.[key] ?? translations.tr[key] ?? key;
@@ -330,6 +416,8 @@ function applyLanguage(language) {
   updateGameLanguage();
   updateScoreNotice();
   renderScoreRecord({ preserveNotice: true });
+  renderLeaderboard();
+  updateLeaderboardStatus();
 }
 
 function openInvitation() {
@@ -533,6 +621,228 @@ function recordGameScore(score) {
   setScoreNotice(numericScore > 0 ? "score.last" : "score.empty", { score: numericScore });
 }
 
+function hasLeaderboardEndpoint() {
+  return leaderboardWebAppUrl.trim().startsWith("https://script.google.com/");
+}
+
+function setLeaderboardStatus(key, replacements = {}) {
+  leaderboardStatusState = { key, replacements };
+  updateLeaderboardStatus();
+}
+
+function updateLeaderboardStatus() {
+  if (!leaderboardStatus) return;
+  leaderboardStatus.textContent = t(leaderboardStatusState.key, leaderboardStatusState.replacements);
+}
+
+function setLeaderboardBusy(isBusy) {
+  leaderboardBusy = isBusy;
+  if (leaderboardSubmit) leaderboardSubmit.disabled = isBusy;
+  if (leaderboardRefresh) leaderboardRefresh.disabled = isBusy || !hasLeaderboardEndpoint();
+}
+
+function normalizePlayerName(name) {
+  return String(name || "").trim().replace(/\s+/g, " ").slice(0, 24);
+}
+
+function loadStoredPlayerName() {
+  if (!playerNameInput) return;
+
+  try {
+    playerNameInput.value = window.localStorage.getItem(playerNameKey) || "";
+  } catch {
+    playerNameInput.value = "";
+  }
+}
+
+function saveStoredPlayerName(name) {
+  try {
+    window.localStorage.setItem(playerNameKey, name);
+  } catch {
+    // The leaderboard still works if the browser blocks local storage.
+  }
+}
+
+function getMedalLabel(rank) {
+  const labels = medalLabels[currentLanguage] || medalLabels.tr;
+  return labels[rank - 1] || "";
+}
+
+function renderLeaderboard() {
+  if (!leaderboardList) return;
+
+  leaderboardList.replaceChildren();
+
+  if (!hasLeaderboardEndpoint() || !leaderboardEntries.length) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "leaderboard-empty";
+    emptyItem.textContent = hasLeaderboardEndpoint() ? t("score.globalEmpty") : t("score.setup");
+    leaderboardList.append(emptyItem);
+    return;
+  }
+
+  leaderboardEntries.slice(0, leaderboardLimit).forEach((entry, index) => {
+    const rank = index + 1;
+    const item = document.createElement("li");
+    item.className = `leaderboard-entry ${rank <= 3 ? `is-top-three is-top-${rank}` : ""}`;
+
+    const badge = document.createElement("span");
+    badge.className = rank <= 3 ? `leaderboard-medal ${medalClasses[rank - 1]}` : "leaderboard-rank";
+    badge.textContent = String(rank);
+    if (rank <= 3) badge.setAttribute("aria-label", getMedalLabel(rank));
+
+    const name = document.createElement("span");
+    name.className = "leaderboard-name";
+    name.textContent = entry.name || "-";
+
+    const score = document.createElement("strong");
+    score.className = "leaderboard-score";
+    score.textContent = String(Number.parseInt(entry.score, 10) || 0);
+
+    item.append(badge, name, score);
+    leaderboardList.append(item);
+  });
+}
+
+function requestLeaderboard(params = {}) {
+  return new Promise((resolve, reject) => {
+    if (!hasLeaderboardEndpoint()) {
+      reject(new Error("Leaderboard endpoint is missing."));
+      return;
+    }
+
+    const callbackName = `gizemOsmanLeaderboard_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const script = document.createElement("script");
+    let timeoutId = 0;
+
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      script.remove();
+      try {
+        delete window[callbackName];
+      } catch {
+        window[callbackName] = undefined;
+      }
+    }
+
+    try {
+      const url = new URL(leaderboardWebAppUrl.trim());
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
+      });
+      url.searchParams.set("callback", callbackName);
+      url.searchParams.set("limit", String(leaderboardLimit));
+
+      window[callbackName] = (payload) => {
+        cleanup();
+        resolve(payload);
+      };
+
+      timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("Leaderboard request timed out."));
+      }, leaderboardTimeoutMs);
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("Leaderboard request failed."));
+      };
+      script.src = url.toString();
+      document.head.append(script);
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
+  });
+}
+
+async function loadLeaderboard({ silent = false } = {}) {
+  if (!hasLeaderboardEndpoint()) {
+    leaderboardEntries = [];
+    renderLeaderboard();
+    setLeaderboardStatus("score.setup");
+    setLeaderboardBusy(false);
+    return [];
+  }
+
+  setLeaderboardBusy(true);
+  if (!silent) setLeaderboardStatus("score.loading");
+
+  try {
+    const payload = await requestLeaderboard({ action: "list" });
+    if (!payload?.ok) throw new Error(payload?.error || "Leaderboard response failed.");
+
+    leaderboardEntries = Array.isArray(payload.leaderboard) ? payload.leaderboard : [];
+    renderLeaderboard();
+    setLeaderboardStatus(leaderboardEntries.length ? "score.loaded" : "score.globalEmpty");
+    return leaderboardEntries;
+  } catch {
+    setLeaderboardStatus("score.loadError");
+    return [];
+  } finally {
+    setLeaderboardBusy(false);
+  }
+}
+
+function showLeaderboardForm(score) {
+  pendingLeaderboardScore = Math.max(0, Number.parseInt(score, 10) || 0);
+  if (!leaderboardForm) return;
+
+  leaderboardForm.hidden = pendingLeaderboardScore <= 0;
+  if (pendingLeaderboardScore > 0) {
+    setLeaderboardStatus("score.savePrompt", { score: pendingLeaderboardScore });
+  }
+}
+
+function hideLeaderboardForm() {
+  pendingLeaderboardScore = 0;
+  if (leaderboardForm) leaderboardForm.hidden = true;
+}
+
+async function submitLeaderboardScore(event) {
+  event.preventDefault();
+  if (leaderboardBusy) return;
+
+  const name = normalizePlayerName(playerNameInput?.value);
+  if (!name) {
+    setLeaderboardStatus("score.nameRequired");
+    playerNameInput?.focus();
+    return;
+  }
+
+  if (!pendingLeaderboardScore) return;
+
+  if (!hasLeaderboardEndpoint()) {
+    setLeaderboardStatus("score.setup");
+    return;
+  }
+
+  setLeaderboardBusy(true);
+  setLeaderboardStatus("score.saving");
+  if (leaderboardSubmit) leaderboardSubmit.textContent = t("score.saving");
+
+  try {
+    const payload = await requestLeaderboard({
+      action: "submit",
+      name,
+      score: pendingLeaderboardScore,
+      lang: currentLanguage,
+    });
+    if (!payload?.ok) throw new Error(payload?.error || "Leaderboard submit failed.");
+
+    saveStoredPlayerName(name);
+    leaderboardEntries = Array.isArray(payload.leaderboard) ? payload.leaderboard : [];
+    renderLeaderboard();
+    hideLeaderboardForm();
+    setLeaderboardStatus("score.saved");
+  } catch {
+    setLeaderboardStatus("score.submitError");
+  } finally {
+    setLeaderboardBusy(false);
+    if (leaderboardSubmit) leaderboardSubmit.textContent = t("score.submit");
+  }
+}
+
 function startGame() {
   if (!weddingGame || !gameStage || !gameObstacle) return;
 
@@ -543,6 +853,7 @@ function startGame() {
   gameState.speed = 230;
   gameState.lastTime = 0;
   gameState.variantIndex = -1;
+  hideLeaderboardForm();
   renderScoreRecord();
 
   gameScore.textContent = "0";
@@ -623,6 +934,7 @@ function endGame() {
   gameButton.textContent = t("game.restart");
   gameStatus.textContent = t("game.end", { score: gameState.score });
   recordGameScore(gameState.score);
+  showLeaderboardForm(gameState.score);
 }
 
 function buildCalendarLink() {
@@ -729,6 +1041,10 @@ gameButton?.addEventListener("click", (event) => {
 });
 
 gameStage?.addEventListener("click", jumpGame);
+leaderboardForm?.addEventListener("submit", submitLeaderboardScore);
+leaderboardRefresh?.addEventListener("click", () => {
+  loadLeaderboard();
+});
 
 weddingGame?.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" && event.key !== " ") return;
@@ -737,6 +1053,8 @@ weddingGame?.addEventListener("keydown", (event) => {
 });
 
 applyLanguage("tr");
+loadStoredPlayerName();
 renderScoreRecord();
+loadLeaderboard({ silent: true });
 updateCountdown();
 window.setInterval(updateCountdown, 1000);
