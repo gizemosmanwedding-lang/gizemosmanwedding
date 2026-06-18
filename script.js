@@ -279,7 +279,7 @@ const translations = {
 Object.assign(translations.tr, {
   "score.kicker": "Oyuncular arasında",
   "score.title": "Skor Tablosu",
-  "score.storage": "İlk 10",
+  "score.storage": "İlk 30",
   "score.empty": "Henüz skor yok. İlk isim sizden gelsin.",
   "score.ready": "Oyun bitince skorunu kaydedip tabloda görebilirsin.",
   "score.newRecord": "Skor: {score}. Kaydettiğinde tabloda görünecek.",
@@ -288,16 +288,16 @@ Object.assign(translations.tr, {
   "score.namePlaceholder": "Adınız",
   "score.submit": "Skoru Kaydet",
   "score.saving": "Kaydediliyor...",
-  "score.saved": "Skor kaydedildi! İlk 10 güncellendi.",
+  "score.saved": "Skor kaydedildi! İlk 30 güncellendi.",
   "score.savePrompt": "{score} puanı tabloya yazdırmak için adını ekle.",
   "score.nameRequired": "Skoru kaydetmek için adını yazmalısın.",
-  "score.setup": "Apps Script URL eklendiğinde global ilk 10 burada görünecek.",
+  "score.setup": "Apps Script URL eklendiğinde global ilk 30 burada görünecek.",
   "score.loading": "Skor tablosu yükleniyor...",
   "score.loaded": "Global skor tablosu güncel.",
   "score.loadError": "Skor tablosu şu an yüklenemedi.",
   "score.submitError": "Skor kaydedilemedi. Birazdan tekrar deneyin.",
   "score.globalEmpty": "Henüz global skor yok. İlk isim burada parlayacak.",
-  "score.rankTitle": "İlk 10",
+  "score.rankTitle": "İlk 30",
   "score.refreshTitle": "Skor tablosunu yenile",
   "score.refresh": "Yenile",
 });
@@ -305,7 +305,7 @@ Object.assign(translations.tr, {
 Object.assign(translations.en, {
   "score.kicker": "Among players",
   "score.title": "Score Board",
-  "score.storage": "Top 10",
+  "score.storage": "Top 30",
   "score.empty": "No scores yet. Your name can be first.",
   "score.ready": "Save your score after the game to see it on the board.",
   "score.newRecord": "Score: {score}. Save it to show it on the board.",
@@ -314,7 +314,7 @@ Object.assign(translations.en, {
   "score.namePlaceholder": "Your name",
   "score.submit": "Save Score",
   "score.saving": "Saving...",
-  "score.saved": "Score saved! Top 10 updated.",
+  "score.saved": "Score saved! Top 30 updated.",
   "score.savePrompt": "Add your name to put {score} points on the board.",
   "score.nameRequired": "Enter your name to save the score.",
   "score.setup": "The global top 10 will appear here after the Apps Script URL is added.",
@@ -323,7 +323,7 @@ Object.assign(translations.en, {
   "score.loadError": "The score board could not be loaded right now.",
   "score.submitError": "The score could not be saved. Please try again soon.",
   "score.globalEmpty": "No global scores yet. The first name will shine here.",
-  "score.rankTitle": "Top 10",
+  "score.rankTitle": "Top 30",
   "score.refreshTitle": "Refresh score board",
   "score.refresh": "Refresh",
 });
@@ -331,7 +331,7 @@ Object.assign(translations.en, {
 Object.assign(translations.it, {
   "score.kicker": "Tra i giocatori",
   "score.title": "Classifica",
-  "score.storage": "Top 10",
+  "score.storage": "Top 30",
   "score.empty": "Ancora nessun punteggio. Il primo nome può essere il tuo.",
   "score.ready": "Salva il tuo punteggio dopo il gioco per vederlo in classifica.",
   "score.newRecord": "Punteggio: {score}. Salvalo per mostrarlo in classifica.",
@@ -340,7 +340,7 @@ Object.assign(translations.it, {
   "score.namePlaceholder": "Il tuo nome",
   "score.submit": "Salva punteggio",
   "score.saving": "Salvataggio...",
-  "score.saved": "Punteggio salvato! Top 10 aggiornata.",
+  "score.saved": "Punteggio salvato! Top 30 aggiornata.",
   "score.savePrompt": "Aggiungi il tuo nome per mettere {score} punti in classifica.",
   "score.nameRequired": "Inserisci il nome per salvare il punteggio.",
   "score.setup": "La top 10 globale apparirà qui dopo aver aggiunto l'URL Apps Script.",
@@ -349,7 +349,7 @@ Object.assign(translations.it, {
   "score.loadError": "La classifica non può essere caricata ora.",
   "score.submitError": "Il punteggio non può essere salvato. Riprova tra poco.",
   "score.globalEmpty": "Ancora nessun punteggio globale. Il primo nome brillerà qui.",
-  "score.rankTitle": "Top 10",
+  "score.rankTitle": "Top 30",
   "score.refreshTitle": "Aggiorna classifica",
   "score.refresh": "Aggiorna",
 });
@@ -369,7 +369,7 @@ const scoreRecordKey = "gizem-osman-runner-score-v1";
 const legacyLeaderboardKey = "gizem-osman-runner-leaderboard-v1";
 const playerNameKey = "gizem-osman-runner-player-name-v1";
 const leaderboardWebAppUrl = "https://script.google.com/macros/s/AKfycbwI_ffs2XMBbCq78vg66DB1ZvSazfiAQnBPlMYqPbZNCRI4Ch3zDpitJxHiZSyQ5jBiSA/exec";
-const leaderboardLimit = 10;
+const leaderboardLimit = 30;
 const leaderboardTimeoutMs = 8500;
 const medalClasses = ["is-gold", "is-silver", "is-bronze"];
 const medalLabels = {

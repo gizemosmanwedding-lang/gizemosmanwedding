@@ -1751,9 +1751,28 @@ svg {
 .leaderboard-list {
   display: grid;
   gap: 8px;
+  max-height: clamp(360px, 56vh, 620px);
   margin: 0;
-  padding: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
   list-style: none;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(185, 149, 85, 0.58) rgba(255, 253, 249, 0.68);
+  scrollbar-width: thin;
+}
+
+.leaderboard-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leaderboard-list::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.68);
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(185, 149, 85, 0.58);
 }
 
 .leaderboard-entry,
