@@ -508,22 +508,24 @@ const gameVariants = [
 const gameState = {
   animationFrame: 0,
   jumpTimeout: 0,
+  lastObstacleBand: -1,
+  lastObstacleGap: 0,
   lastTime: 0,
   obstacleX: 0,
   passedObstacle: false,
   running: false,
   jumping: false,
   score: 0,
-  speed: 220,
+  speed: 230,
   variantIndex: 7,
 };
 
 const gameSettings = {
-  acceleration: 5.2,
+  acceleration: 11,
   jumpDurationMs: 690,
-  maxSpeed: 430,
-  scoreSpeedBoost: 5,
-  startSpeed: 220,
+  maxSpeed: 500,
+  scoreSpeedBoost: 9,
+  startSpeed: 230,
 };
 
 function getVariantLabel(variant) {
@@ -564,9 +566,26 @@ function updateGameLanguage() {
 
 function getRandomObstacleGap() {
   const stageWidth = gameStage?.clientWidth || 680;
-  const minGap = Math.max(72, Math.min(132, stageWidth * 0.12));
-  const maxGap = Math.max(minGap + 96, Math.min(286, stageWidth * 0.34));
-  return Math.round(minGap + Math.random() * (maxGap - minGap));
+  const bands = [
+    { min: Math.max(54, stageWidth * 0.08), max: Math.max(96, stageWidth * 0.17) },
+    { min: Math.max(118, stageWidth * 0.22), max: Math.max(188, stageWidth * 0.36) },
+    { min: Math.max(220, stageWidth * 0.44), max: Math.max(310, stageWidth * 0.62) },
+  ];
+  let bandIndex = Math.floor(Math.random() * bands.length);
+  if (bandIndex === gameState.lastObstacleBand) {
+    bandIndex = (bandIndex + 1 + Math.floor(Math.random() * (bands.length - 1))) % bands.length;
+  }
+
+  const band = bands[bandIndex];
+  let gap = Math.round(band.min + Math.random() * (band.max - band.min));
+
+  if (Math.abs(gap - gameState.lastObstacleGap) < 42) {
+    gap = Math.round(band.min + Math.random() * (band.max - band.min));
+  }
+
+  gameState.lastObstacleBand = bandIndex;
+  gameState.lastObstacleGap = gap;
+  return gap;
 }
 
 function insetRect(rect, insets) {
@@ -910,6 +929,8 @@ function startGame() {
   gameState.score = 0;
   gameState.speed = gameSettings.startSpeed;
   gameState.lastTime = 0;
+  gameState.lastObstacleBand = -1;
+  gameState.lastObstacleGap = 0;
   gameState.variantIndex = -1;
   window.clearTimeout(gameState.jumpTimeout);
   hideLeaderboardForm();
