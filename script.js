@@ -507,14 +507,23 @@ const gameVariants = [
 
 const gameState = {
   animationFrame: 0,
+  jumpTimeout: 0,
   lastTime: 0,
   obstacleX: 0,
   passedObstacle: false,
   running: false,
   jumping: false,
   score: 0,
-  speed: 230,
+  speed: 220,
   variantIndex: 7,
+};
+
+const gameSettings = {
+  acceleration: 5.2,
+  jumpDurationMs: 690,
+  maxSpeed: 430,
+  scoreSpeedBoost: 5,
+  startSpeed: 220,
 };
 
 function getVariantLabel(variant) {
@@ -551,6 +560,46 @@ function updateGameLanguage() {
   }
 
   setupGamePreview();
+}
+
+function getRandomObstacleGap() {
+  const stageWidth = gameStage?.clientWidth || 680;
+  const minGap = Math.max(72, Math.min(132, stageWidth * 0.12));
+  const maxGap = Math.max(minGap + 96, Math.min(286, stageWidth * 0.34));
+  return Math.round(minGap + Math.random() * (maxGap - minGap));
+}
+
+function insetRect(rect, insets) {
+  const width = rect.width;
+  const height = rect.height;
+
+  return {
+    bottom: rect.bottom - height * insets.bottom,
+    left: rect.left + width * insets.left,
+    right: rect.right - width * insets.right,
+    top: rect.top + height * insets.top,
+  };
+}
+
+function getGameHitboxes() {
+  if (!gameRunner || !gameObstacle) return null;
+
+  const runnerRect = gameRunner.getBoundingClientRect();
+  const obstacleRect = gameObstacle.getBoundingClientRect();
+  if (!runnerRect.width || !obstacleRect.width) return null;
+
+  // The PNGs have transparent padding, so collisions use the visible center mass.
+  return {
+    obstacle: insetRect(obstacleRect, { bottom: 0.08, left: 0.16, right: 0.16, top: 0.12 }),
+    runner: insetRect(runnerRect, { bottom: 0.12, left: 0.3, right: 0.3, top: 0.32 }),
+  };
+}
+
+function rectsOverlap(first, second) {
+  return first.left < second.right
+    && first.right > second.left
+    && first.top < second.bottom
+    && first.bottom > second.top;
 }
 
 function setScoreNotice(key, replacements = {}) {
@@ -859,9 +908,10 @@ function startGame() {
   gameState.running = true;
   gameState.jumping = false;
   gameState.score = 0;
-  gameState.speed = 230;
+  gameState.speed = gameSettings.startSpeed;
   gameState.lastTime = 0;
   gameState.variantIndex = -1;
+  window.clearTimeout(gameState.jumpTimeout);
   hideLeaderboardForm();
   renderScoreRecord();
 
@@ -884,10 +934,10 @@ function jumpGame() {
   gameState.jumping = true;
   gameRunner.classList.add("is-jumping");
 
-  window.setTimeout(() => {
+  gameState.jumpTimeout = window.setTimeout(() => {
     gameRunner.classList.remove("is-jumping");
     gameState.jumping = false;
-  }, 620);
+  }, gameSettings.jumpDurationMs);
 }
 
 function updateGame(time) {
@@ -896,21 +946,21 @@ function updateGame(time) {
   if (!gameState.lastTime) gameState.lastTime = time;
   const delta = Math.min(32, time - gameState.lastTime) / 1000;
   gameState.lastTime = time;
+  gameState.speed = Math.min(gameSettings.maxSpeed, gameState.speed + gameSettings.acceleration * delta);
   gameState.obstacleX -= gameState.speed * delta;
   gameObstacle.style.transform = `translateX(${gameState.obstacleX}px)`;
 
-  const dangerStart = 68;
-  const dangerEnd = 164;
+  const hitboxes = getGameHitboxes();
 
-  if (gameState.obstacleX < dangerEnd && gameState.obstacleX > dangerStart && !gameState.jumping) {
+  if (hitboxes && rectsOverlap(hitboxes.runner, hitboxes.obstacle)) {
     endGame();
     return;
   }
 
-  if (!gameState.passedObstacle && gameState.obstacleX < dangerStart) {
+  if (!gameState.passedObstacle && hitboxes && hitboxes.obstacle.right < hitboxes.runner.left) {
     gameState.passedObstacle = true;
     gameState.score += 1;
-    gameState.speed = Math.min(360, gameState.speed + 13);
+    gameState.speed = Math.min(gameSettings.maxSpeed, gameState.speed + gameSettings.scoreSpeedBoost);
     gameScore.textContent = String(gameState.score);
     gameStatus.textContent = gameState.score % 5 === 0 ? t("game.tour") : t("game.success");
   }
@@ -927,7 +977,7 @@ function resetObstacle() {
   const variantIndex = nextIndex === gameState.variantIndex ? (nextIndex + 1) % gameVariants.length : nextIndex;
   const variant = gameVariants[variantIndex];
   gameState.variantIndex = variantIndex;
-  gameState.obstacleX = gameStage.clientWidth + 82;
+  gameState.obstacleX = gameStage.clientWidth + getRandomObstacleGap();
   gameState.passedObstacle = false;
   gameObstacle.className = "italy-obstacle image-obstacle";
   gameObstacle.dataset.place = getVariantLabel(variant);
@@ -938,6 +988,8 @@ function resetObstacle() {
 function endGame() {
   gameState.running = false;
   window.cancelAnimationFrame(gameState.animationFrame);
+  window.clearTimeout(gameState.jumpTimeout);
+  gameState.jumping = false;
   weddingGame?.classList.remove("is-running");
   gameRunner?.classList.remove("is-jumping");
   gameButton.textContent = t("game.restart");
